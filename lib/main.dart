@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auth_app/cubit/auth_cubit.dart';
 import 'package:auth_app/cubit/home_cubit.dart';
 import 'package:auth_app/cubit/login_cubit.dart';
@@ -6,8 +8,11 @@ import 'package:auth_app/cubit/signup_method_cubit.dart';
 import 'package:auth_app/cubit/t_and_cs_cubit.dart';
 import 'package:auth_app/cubit/test_login_cubit.dart';
 import 'package:auth_app/cubit/test_signup_cubit.dart';
+import 'package:auth_app/getxcontrollers/edit_image_controller.dart';
+import 'package:auth_app/getxcontrollers/overlay_text_position_controller.dart';
 import 'package:auth_app/getxcontrollers/logged_in_username.dart';
 import 'package:auth_app/getxcontrollers/selected_calendar_controller.dart';
+import 'package:auth_app/getxcontrollers/video_controller.dart';
 import 'package:auth_app/pages/contacts_list.dart';
 import 'package:auth_app/pages/contacts_permission.dart';
 import 'package:auth_app/pages/home.dart';
@@ -26,8 +31,11 @@ import 'package:auth_app/utils/pref_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:get/instance_manager.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'getxcontrollers/create_moment_controller.dart';
@@ -88,6 +96,11 @@ class _MyHomePageState extends State<MyHomePage> {
   final LoggedInUsernameController loggedInUsernameController = Get.put(LoggedInUsernameController());
   final CreateMomentController controller = Get.put(CreateMomentController());
   final SelectedCalendarController selectedCalendarController = Get.put(SelectedCalendarController());
+  final OverlayTextPositionController imageTextPositionController = Get.put(OverlayTextPositionController());
+  final EditImageController editImageController = Get.put(EditImageController());
+  final VideoController videoController = Get.put(VideoController());
+
+  FlutterFFmpegConfig _fFmpegConfig;
 
   @override
   void initState() {
@@ -102,10 +115,9 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
 
-    // Future.delayed(Duration.zero, () async{
-      
-
-    // });
+    _fFmpegConfig = new FlutterFFmpegConfig();
+    _setFfMpegFontConfig();
+    
   }
 
   @override
@@ -120,5 +132,28 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
     );
+  }
+
+  _setFfMpegFontConfig() async{
+    var tempDir = await getTemporaryDirectory();
+    final fontDirPath = "${tempDir.path}/fonts";
+    final fontDir =  Directory(fontDirPath);
+
+    if(!await fontDir.exists()){
+      try{
+        await Directory(fontDirPath).create(recursive: true);
+        final assetFontByteData = await rootBundle.load("assets/fonts/OpenSans-Light.ttf");
+        final buffer = assetFontByteData.buffer;
+
+        await File("${fontDir.path}/OpenSans-Light.ttf").writeAsBytes(
+          buffer.asInt8List(assetFontByteData.offsetInBytes, assetFontByteData.lengthInBytes) //copy asset font to folder
+        );
+      }catch(error){
+        print("FONT SAVE ERROR: $error");
+      }
+
+    }
+    _fFmpegConfig.setFontDirectory("${fontDir.path}", null);
+    
   }
 }

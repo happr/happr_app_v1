@@ -20,6 +20,8 @@ const MOMENT_TYPE_HAPPENING_NOW = "MOMENT_TYPE_HAPPENING_NOW";
 const ARTIFACT_TYPE_MEMORY = "MEMORY";
 const ARTIFACT_TYPE_MOMENT = "MOMENT";
 
+const double VIDEO_HEIGHT = 250;
+
 class AssetNames {
   static const _BASE_ASSET_DIR = "assets/images";
 
@@ -67,6 +69,7 @@ class AssetNames {
   static const String SALADS = "$_BASE_ASSET_DIR/salads.jpg";
   static const String PIZZA = "$_BASE_ASSET_DIR/pizza.jpg";
   static const String CHICKEN = "$_BASE_ASSET_DIR/chicken.jpg";
+  static const String COLOR_PALLETE_SVG = "$_BASE_ASSET_DIR/color_pallete_svg.svg";
 }
 
 class AppColors {
@@ -132,6 +135,26 @@ class Navigations {
         Navigator.push(context, route);
       }
     }
+  }
+
+  static goToTransparentScreen({@required BuildContext context, @required Widget nextScreen}){
+    final route = PageRouteBuilder(
+      opaque: false,
+      pageBuilder: (context, _, __){
+        return nextScreen;
+      }
+    );
+    Navigator.of(context).push(route);
+  }
+
+  static showTransparentDialog({@required BuildContext context, @required Widget screen}){
+    showDialog(
+      context: context,
+      builder: (_) => Material(
+        type: MaterialType.transparency,
+        child: screen,
+      )
+    );
   }
 }
 

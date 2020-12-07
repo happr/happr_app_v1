@@ -61,6 +61,12 @@ dependencies:
   device_calendar: ^3.1.0
   mailer: ^3.2.1
   clipboard: ^0.1.2+8
+  image_editor_pro: ^1.0.6
+  video_player: ^1.0.1
+  flutter_spinkit: ^4.1.2+1
+  flutter_ffmpeg: ^0.3.0
+  tapioca: ^1.0.1
+  video_thumbnail: ^0.2.4
   
 dev_dependencies:
   flutter_test:
@@ -80,6 +86,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/fonts/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
