@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Moment {
   String id;
   String creator;
   String title;
   String location;
-  List<Map<String, String>> attendees;
+  List<Map<String, dynamic>> attendees;
   String startDateTime;
   String endDateTime;
   DateTime realStartDateTime;
@@ -13,18 +15,20 @@ class Moment {
   String category;
   String momentCalenderId;
   String calendarId;
+  String timestamp;
 
   Moment({this.id, this.creator, this.title, this.location, this.attendees, this.startDateTime, this.endDateTime, 
-  this.notes, this.imageUrl, this.category, this.momentCalenderId, this.realStartDateTime, this.realEndDateTime, this.calendarId});
+  this.notes, this.imageUrl, this.category, this.momentCalenderId, this.realStartDateTime, this.realEndDateTime, this.calendarId, this.timestamp});
 
   factory Moment.fromMap(Map<String, dynamic> map){
+    // print('ATTENDEES: ${map["attendees"]}');
     
     return Moment(
       id: map["id"],
       creator: map["creator"],
       title: map["title"],
       location: map["location"],
-      attendees: List<dynamic>.from(map["attendees"]).cast<Map<String, String>>(),
+      attendees: List<Map<String, dynamic>>.from(map["attendees"]),
       startDateTime: map["dateTime"],
       endDateTime: map["endDateTime"],
       notes: map["notes"],
@@ -53,7 +57,8 @@ class Moment {
       "momentCalenderId" : momentCalenderId ?? "",
       "calendarId" : calendarId ?? "",
       "realStartDateTime" : realStartDateTime.toString(),
-      "realEndDateTime" : realEndDateTime.toString()
+      "realEndDateTime" : realEndDateTime.toString(),
+      "timestamp" : Timestamp.now().nanoseconds.toString()
     };
   }
 }

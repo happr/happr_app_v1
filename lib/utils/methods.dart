@@ -1,14 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:auth_app/getxcontrollers/video_controller.dart';
 import 'package:auth_app/pages/preview_recorded_video.dart';
 import 'package:auth_app/utils/constants.dart';
 import 'package:camera/camera.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/instance_manager.dart';
 import 'dart:math' as math;
+import 'package:path/path.dart' show basename, join;
 
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
@@ -18,7 +23,7 @@ class Methods {
 
   static showGeneralErrorToast(dynamic error){
     Fluttertoast.showToast(
-      msg: error.message,
+      msg: error,
       textColor: AppColors.ERROR_COLOR,
       toastLength: Toast.LENGTH_LONG
     );
@@ -177,5 +182,43 @@ class Methods {
     print("IS VIDEO PATH: $path");
     return path.isNotEmpty && path.contains(".mp4");
   }
+
+  static Future<File> fileFromAsset(String assetPath) async{
+    final tempDir = await getTemporaryDirectory();
+    final assetDirPath = "${tempDir.path}/happr_assets";
+    await Directory(assetDirPath).create(recursive: true);
+    final byteData = await rootBundle.load(assetPath);
+    final buffer = byteData.buffer;
+    final generatedFile = await File("$assetDirPath/${basename(assetPath)}").writeAsBytes(
+      buffer.asInt8List(byteData.offsetInBytes, byteData.lengthInBytes)
+    );
+    return generatedFile;
+  }
+
+  static Future<Uint8List> int8ListFromAsset(String assetPath) async{
+    final tempDir = await getTemporaryDirectory();
+    final assetDirPath = "${tempDir.path}/happr_assets";
+    await Directory(assetDirPath).create(recursive: true);
+    final byteData = await rootBundle.load(assetPath);
+    final buffer = byteData.buffer;
+    print("PREVIEW_SCREEN ASSET PATH: $assetDirPath/${basename(assetPath)}");
+    final generatedFile = await File("$assetDirPath/${basename(assetPath)}").writeAsBytes(
+      buffer.asInt8List(byteData.offsetInBytes, byteData.lengthInBytes)
+    );
+    return generatedFile.readAsBytesSync();
+  }
+
+  static showLocalNotification({String title = "Happr Notification", @required String body, FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin}) async{
+    final _flutterLocalNotificationsPlugin = flutterLocalNotificationsPlugin ?? FlutterLocalNotificationsPlugin();
+    final _androidNotificationDetails = AndroidNotificationDetails("12", "Default", "This will handle all the Happr notifications",
+      priority: Priority.max,
+      importance: Importance.max,
+    );
+    final _iOSNotificationDetails  = IOSNotificationDetails(subtitle: body);
+    final notificationDetails = NotificationDetails(android: _androidNotificationDetails, iOS: _iOSNotificationDetails);
+    await  _flutterLocalNotificationsPlugin.show(Timestamp.now().nanoseconds, title, body, notificationDetails);
+  }
+
+  // static String 
 
 }

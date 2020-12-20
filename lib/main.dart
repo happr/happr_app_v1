@@ -16,6 +16,8 @@ import 'package:auth_app/getxcontrollers/video_controller.dart';
 import 'package:auth_app/pages/contacts_list.dart';
 import 'package:auth_app/pages/contacts_permission.dart';
 import 'package:auth_app/pages/home.dart';
+import 'package:auth_app/pages/interests.dart';
+import 'package:auth_app/pages/interests_v2.dart';
 import 'package:auth_app/pages/landing_page.dart';
 import 'package:auth_app/pages/login.dart';
 import 'package:auth_app/pages/splash.dart';
@@ -27,6 +29,7 @@ import 'package:auth_app/providers/moment_provider.dart';
 import 'package:auth_app/providers/moment_type_provider.dart';
 import 'package:auth_app/providers/take_picture_type_provider.dart';
 import 'package:auth_app/utils/constants.dart';
+import 'package:auth_app/utils/methods.dart';
 import 'package:auth_app/utils/pref_manager.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -34,10 +37,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/instance_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
+import 'getxcontrollers/categories_controller.dart';
 import 'getxcontrollers/create_moment_controller.dart';
 
 void main() async{
@@ -99,12 +104,16 @@ class _MyHomePageState extends State<MyHomePage> {
   final OverlayTextPositionController imageTextPositionController = Get.put(OverlayTextPositionController());
   final EditImageController editImageController = Get.put(EditImageController());
   final VideoController videoController = Get.put(VideoController());
+  final CategoriesController _categoriesController = Get.put(CategoriesController());
+  FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
 
   FlutterFFmpegConfig _fFmpegConfig;
 
   @override
   void initState() {
     super.initState();
+
+    _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async{ 
       final loggedIn = context.bloc<AuthCubit>().checkLoggedInUser();
@@ -117,11 +126,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _fFmpegConfig = new FlutterFFmpegConfig();
     _setFfMpegFontConfig();
-    
+    _initialiseLocalNotificationsPlugin();
+    Methods.showLocalNotification(body: "Welcome back to Happr", flutterLocalNotificationsPlugin: _flutterLocalNotificationsPlugin);
   }
 
   @override
   Widget build(BuildContext context) {
+    // return InterestsV2();
     
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state){
@@ -141,7 +152,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if(!await fontDir.exists()){
       try{
-        await Directory(fontDirPath).create(recursive: true);
+        await fontDir.create(recursive: true);
         final assetFontByteData = await rootBundle.load("assets/fonts/OpenSans-Light.ttf");
         final buffer = assetFontByteData.buffer;
 
@@ -154,6 +165,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
     }
     _fFmpegConfig.setFontDirectory("${fontDir.path}", null);
-    
+  }
+
+  _initialiseLocalNotificationsPlugin(){
+    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings(
+      onDidReceiveLocalNotification: _onDidReceiveLocalNotification
+    );
+    final InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid, 
+      iOS: initializationSettingsIOS
+    );
+    _flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  Future _onDidReceiveLocalNotification(int id, String title, String body, String payload){ //for iOS
+
   }
 }

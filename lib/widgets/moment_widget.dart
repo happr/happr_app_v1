@@ -1,6 +1,7 @@
 import 'package:auth_app/cubit/home_cubit.dart';
 import 'package:auth_app/getxcontrollers/create_moment_controller.dart';
 import 'package:auth_app/getxcontrollers/selected_calendar_controller.dart';
+import 'package:auth_app/models/happr_contact.dart';
 import 'package:auth_app/models/moment.dart';
 import 'package:auth_app/pages/add_memory.dart';
 import 'package:auth_app/pages/change_moment_image.dart';
@@ -14,13 +15,16 @@ import 'package:auth_app/utils/constants.dart';
 import 'package:auth_app/utils/methods.dart';
 import 'package:auth_app/widgets/custom_progress_indicator.dart';
 import 'package:auth_app/widgets/custom_text_view.dart';
+import 'package:auth_app/widgets/friends_widget.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
+import 'contact_avatar.dart';
 import 'error_text.dart';
 
 class MomentWidget extends StatefulWidget {
@@ -36,8 +40,16 @@ class _MomentWidgetState extends State<MomentWidget> {
   final _momentRepo = MomentRepo();
   final CreateMomentController _createMomentController = Get.find();
   final SelectedCalendarController _selectedCalendarController = Get.find();
+  FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin;
 
   var _tapPosition;
+  
+  @override
+  void initState() {
+    super.initState();
+
+    _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -185,16 +197,8 @@ class _MomentWidgetState extends State<MomentWidget> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Icon(Icons.person),
-                      Container(
-                        width: 75,
-                        height: 35,
-                        margin: const EdgeInsets.only(left: 10),
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage(AssetNames.STACKED_IMAGES),
-                            fit: BoxFit.contain
-                          )
-                        ),
+                      FriendsWidget(
+                        contacts: widget.moment.attendees.map((attendee) => HapprContact.fromMap(attendee.cast<String, dynamic>())).toList()
                       )
                     ],
                   ),
@@ -203,16 +207,71 @@ class _MomentWidgetState extends State<MomentWidget> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        alignment: Alignment.center,
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.LIGHT_GREY_SHADE2,
-                          borderRadius: BorderRadius.circular(20)
-                        ),
-                        child: Icon(Icons.share),
+                      Builder(
+                        builder: (context, ) {
+                          return GestureDetector(
+                            onTap: (){
+                              showModalBottomSheet(
+                                context: context, 
+                                builder: (context){
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: (){
+                                          Navigator.pop(context);
+                                        },
+                                        child: Container(
+                                          margin: const EdgeInsets.only(top: 10, bottom: 8),
+                                          child: Icon(Icons.clear, color: Colors.black),
+                                        ),
+                                      ),
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: widget.moment.attendees.map((attendee) => HapprContact.fromMap(attendee)).toList().map(
+                                          (contact) => GestureDetector(
+                                            onTap: (){
+                                              Methods.showLocalNotification(body: "Moment shared successfully", 
+                                                flutterLocalNotificationsPlugin: _flutterLocalNotificationsPlugin
+                                              );
+                                              Methods.showCustomSnackbar(context: context, message: "Moment shared successfully");
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(left: 6, right: 6, top: 5, ),
+                                              child: ListTile(
+                                                leading: ContactAvatar(
+                                                  initials: contact.initials,
+                                                  size: 30,
+                                                ),
+                                                title: CustomTextView(
+                                                  fontSize: 13,
+                                                  text: contact.displayName
+                                                ),
+                                              )
+                                            ),
+                                          )
+                                        ).toList(),
+                                      ),
+                                    ],
+                                  );
+                                }
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 10),
+                              alignment: Alignment.center,
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.LIGHT_GREY_SHADE2,
+                                borderRadius: BorderRadius.circular(20)
+                              ),
+                              child: Icon(Icons.share),
+                            ),
+                          );
+                        },
                       ),
 
                       GestureDetector(
@@ -261,7 +320,7 @@ class _MomentWidgetState extends State<MomentWidget> {
     );
   }
 
-   void _storePosition(TapDownDetails details) {
+  void _storePosition(TapDownDetails details) {
     _tapPosition = details.globalPosition;
   }
 }

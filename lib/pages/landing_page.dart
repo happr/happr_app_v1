@@ -7,6 +7,7 @@ import 'package:auth_app/pages/login.dart';
 import 'package:auth_app/repos/auth_repo.dart';
 import 'package:auth_app/utils/constants.dart';
 import 'package:auth_app/widgets/custom_text_view.dart';
+import 'package:auth_app/widgets/image_container.dart';
 import 'package:auth_app/widgets/ring.dart';
 import 'package:auth_app/widgets/rounded_raised_button.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ class LandingPage extends StatelessWidget {
     final _loginCubit = context.bloc<LoginCubit>();
 
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           ListView(
@@ -36,7 +38,7 @@ class LandingPage extends StatelessWidget {
               
               Center(
                 child: CustomTextView(
-                  text: "Responsibly Connected",
+                  text: "Live Consciously",
                   fontSize: 18,
                   textColor: Colors.black,
                 ),
@@ -75,6 +77,7 @@ class LandingPage extends StatelessWidget {
                     text: "Already have an account? Log in",
                     textColor: Colors.black, 
                     bgColor: Colors.white,
+                    borderColor: Colors.black,
                     onTap: (){
                       Navigations.goToScreen(context, EmailLogin());
                     }
@@ -115,11 +118,10 @@ class LandingPage extends StatelessWidget {
                               );
                             } 
                           },
-                          child: SvgPicture.asset(AssetNames.FACEBOOK_LOGO_SVG,
-                            width: 32,
-                            height: 32,
-                            color: Color(0xFF1461AD),
-                          ),
+                          child: ImageContainer(
+                            assetImage: AssetNames.FACEBOOK_LOGO_NEW_PNG,
+                            size: 42,
+                          )
                         ),
 
                         GestureDetector(
@@ -139,11 +141,10 @@ class LandingPage extends StatelessWidget {
                           },
                           child: Container(
                             margin: const EdgeInsets.only(left: 15, right: 15),
-                            child: SvgPicture.asset(AssetNames.TWITTER_LOGO_SVG,
-                              width: 32,
-                              height: 32,
-                              color:  Color(0xFF0080E3),
-                            ),
+                            child: ImageContainer(
+                              assetImage: AssetNames.TWITTER_LOGO_NEW_PNG,
+                              size: 42,
+                            )
                           ),
                         ),
 
@@ -162,11 +163,10 @@ class LandingPage extends StatelessWidget {
                               );
                             } 
                           },
-                          child: SvgPicture.asset(AssetNames.GOOGLE_LOGO_SVG,
-                            width: 32,
-                            height: 32,
-                            color:  Color(0xFFD54545),
-                          ),
+                          child:ImageContainer(
+                            assetImage: AssetNames.GOOGLE_LOGO_NEW_PNG,
+                            size: 42,
+                          )
                         ),
                       ],
                     ),
